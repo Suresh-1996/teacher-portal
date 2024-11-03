@@ -10,8 +10,14 @@ export const signIn = createAsyncThunk(
       const response = await axios.post("/api/teachers/signin", credentials);
       return response.data; // Expecting JWT token and user data
     } catch (error) {
-      if (error.response.status === 400) {
+      if (error.response.status === 404) {
         return rejectWithValue("Teacher not found");
+      }
+      if (error.response.status === 401) {
+        return rejectWithValue("Invalid Password");
+      }
+      if (error.response.status === 500) {
+        return rejectWithValue("Sever error");
       }
       return rejectWithValue("An error occurred. Please try again.");
     }
@@ -25,8 +31,11 @@ export const signUp = createAsyncThunk(
       const response = await axios.post("/api/teachers/signup", userData);
       return response.data; // Expecting JWT token and user data
     } catch (error) {
-      if (error.response.status === 400) {
+      if (error.response.status === 409) {
         return rejectWithValue("Teacher already exists with this email.");
+      }
+      if (error.response.status === 500) {
+        return rejectWithValue("Sever error");
       }
       return rejectWithValue("An error occurred. Please try again.");
     }

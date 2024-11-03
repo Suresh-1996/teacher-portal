@@ -109,7 +109,7 @@ function AuthForm({ isSignUp }) {
               {...register("email", {
                 required: "Email is required",
                 pattern: {
-                  value: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/,
+                  value: /^[a-z0-9._%+-]+@[a-z0-9-]+(\.[a-z]{2,})+$/,
                   message: "Enter a valid email",
                 },
               })}
