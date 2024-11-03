@@ -10,7 +10,10 @@ export const signIn = createAsyncThunk(
       const response = await axios.post("/api/teachers/signin", credentials);
       return response.data; // Expecting JWT token and user data
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      if (error.response.status === 400) {
+        return rejectWithValue("Teacher not found");
+      }
+      return rejectWithValue("An error occurred. Please try again.");
     }
   }
 );
@@ -22,7 +25,10 @@ export const signUp = createAsyncThunk(
       const response = await axios.post("/api/teachers/signup", userData);
       return response.data; // Expecting JWT token and user data
     } catch (error) {
-      return rejectWithValue(error.response.data);
+      if (error.response.status === 400) {
+        return rejectWithValue("Teacher already exists with this email.");
+      }
+      return rejectWithValue("An error occurred. Please try again.");
     }
   }
 );
@@ -34,6 +40,9 @@ const authSlice = createSlice({
     logout: (state) => {
       state.user = null;
       state.token = null;
+    },
+    clearError: (state) => {
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -65,5 +74,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;

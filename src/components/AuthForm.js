@@ -1,5 +1,5 @@
 // src/components/AuthForm.js
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import {
   TextField,
@@ -8,9 +8,10 @@ import {
   Box,
   Link as MuiLink,
   Avatar,
+  Alert,
 } from "@mui/material";
-import { useDispatch } from "react-redux";
-import { signIn, signUp } from "../redux/authSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { signIn, signUp, clearError } from "../redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 
 function AuthForm({ isSignUp }) {
@@ -19,10 +20,19 @@ function AuthForm({ isSignUp }) {
     handleSubmit,
     formState: { errors },
   } = useForm();
+
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [profilePicture, setProfilePicture] = useState(null);
   const [preview, setPreview] = useState(null);
+  const { error } = useSelector((state) => state.auth); // access err
+
+  useEffect(() => {
+    // Clear error message when component unmounts
+    return () => {
+      dispatch(clearError());
+    };
+  }, [dispatch]);
 
   const onSubmit = async (data) => {
     const formData = new FormData();
@@ -35,6 +45,7 @@ function AuthForm({ isSignUp }) {
     // Dispatch the signIn or signUp action and wait for the result
     const action = isSignUp ? signUp(formData) : signIn(data);
     const resultAction = await dispatch(action); // transfer the action to redux for excution
+
     if (
       signIn.fulfilled.match(resultAction) ||
       signUp.fulfilled.match(resultAction)
@@ -65,13 +76,28 @@ function AuthForm({ isSignUp }) {
         {isSignUp ? "Teacher Registration" : "Teacher Login"}
       </Typography>
       <form onSubmit={handleSubmit(onSubmit)} encType="multipart/form-data">
+        {/* err msg  display */}
+        {error && (
+          <Alert severity="error" onClose={() => dispatch(clearError())}>
+            {error}
+          </Alert>
+        )}
+
         {isSignUp && (
           <>
             <TextField
               label="Name"
               fullWidth
               margin="normal"
-              {...register("name", { required: "Name is required" })}
+              {...register("name", {
+                required: "Name is required",
+                minLength: {
+                  value: 3,
+                  message: "Name must be at least 3 characters long",
+                },
+                validate: (value) =>
+                  !/^\s/.test(value) || "Name cannot start with a space",
+              })}
               // if there are value true or false
               error={!!errors.name}
               helperText={errors.name?.message}
@@ -83,8 +109,8 @@ function AuthForm({ isSignUp }) {
               {...register("email", {
                 required: "Email is required",
                 pattern: {
-                  value: /\S+@\S+\.\S+/,
-                  messge: "Enter a valid email",
+                  value: /^[a-z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,}$/,
+                  message: "Enter a valid email",
                 },
               })}
               error={!!errors.email}
@@ -97,7 +123,12 @@ function AuthForm({ isSignUp }) {
               margin="normal"
               {...register("password", {
                 required: "Password is required",
-                minLength: { value: 6, message: "Minimum length is 6" },
+                pattern: {
+                  value:
+                    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{6,}$/,
+                  message:
+                    "Password must include upper,lower case letters,numbers,symbols and atleast 6 characters",
+                },
               })}
               error={!!errors.password}
               helperText={errors.password?.message}
@@ -143,7 +174,6 @@ function AuthForm({ isSignUp }) {
               margin="normal"
               {...register("password", {
                 required: "Password is required",
-                minLength: { value: 6, message: "Minimum length is 6" },
               })}
               error={!!errors.password}
               helperText={errors.password?.message}
@@ -162,11 +192,21 @@ function AuthForm({ isSignUp }) {
       </form>
       <Typography align="center" sx={{ mt: 2 }}>
         {isSignUp ? (
-          <MuiLink component={Link} to="/" variant="body2">
+          <MuiLink
+            component={Link}
+            to="/"
+            variant="body2"
+            onClick={() => dispatch(clearError())}
+          >
             Already have an account? Sign In
           </MuiLink>
         ) : (
-          <MuiLink component={Link} to="/signup" variant="body2">
+          <MuiLink
+            component={Link}
+            to="/signup"
+            variant="body2"
+            onClick={() => dispatch(clearError())}
+          >
             Don’t have an account? Sign Up
           </MuiLink>
         )}
