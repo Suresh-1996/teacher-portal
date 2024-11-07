@@ -1,6 +1,3 @@
-//
-
-// src/components/AddCourseModal.js
 import React from "react";
 import { useForm } from "react-hook-form";
 import { Modal, Box, TextField, Button, Typography } from "@mui/material";

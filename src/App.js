@@ -1,4 +1,3 @@
-// src/App.js
 import React from "react";
 import {
   BrowserRouter as Router, //browser naviagtion,ex:home page to about page(not api route)
