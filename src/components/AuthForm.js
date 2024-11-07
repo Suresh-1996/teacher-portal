@@ -11,7 +11,7 @@ import {
   Alert,
 } from "@mui/material";
 import { useDispatch, useSelector } from "react-redux";
-import { signIn, signUp, clearError } from "../redux/authSlice";
+import { signIn, signUp, clearError, setError } from "../redux/authSlice";
 import { Link, useNavigate } from "react-router-dom";
 
 function AuthForm({ isSignUp }) {
@@ -41,6 +41,10 @@ function AuthForm({ isSignUp }) {
     formData.append("password", data.password);
     if (profilePicture) {
       formData.append("profilePicture", profilePicture);
+    } else {
+      if (isSignUp) {
+        return dispatch(setError("Please Upload Profile Picture"));
+      }
     }
     // Dispatch the signIn or signUp action and wait for the result
     const action = isSignUp ? signUp(formData) : signIn(data);
